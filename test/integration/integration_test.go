@@ -96,6 +96,15 @@ var _ = Describe("gucci", func() {
 			Expect(string(session.Out.Contents())).To(Equal("A=from_file\nB=from_env\nC=from_opt\n"))
 		})
 
+		It("should merge values from vars files", func() {
+			gucciCmd := exec.Command(gucciPath,
+				"-f", FixturePath("precedence_vars_file1.yaml"),
+				"-f", FixturePath("precedence_vars_file2.yaml"),
+				FixturePath("precedence_files.tpl"))
+			session := Run(gucciCmd)
+
+			Expect(string(session.Out.Contents())).To(Equal("A=map[A:f2 B:f2 C:f1 D:f2]\nB=[f2 f2]\nC=map[A:f1 B:f1]\nD=[f2 f2]\n"))
+		})
 	})
 
 	Describe("variable nesting", func() {
