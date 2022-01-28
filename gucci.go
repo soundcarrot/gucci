@@ -20,7 +20,7 @@ const (
 	flagVarsFile     = "f"
 	flagVarsFileLong = flagVarsFile + ",vars-file"
 
-	flagSetOpt = "o"
+	flagSetOpt     = "o"
 	flagSetOptLong = flagSetOpt + ",tpl-opt"
 )
 
@@ -40,12 +40,12 @@ func main() {
 			Name:  flagSetVarLong,
 			Usage: "A `KEY=VALUE` pair variable",
 		},
-		cli.StringFlag{
+		cli.StringSliceFlag{
 			Name:  flagVarsFileLong,
 			Usage: "A json or yaml `FILE` from which to read variables",
 		},
 		cli.StringSliceFlag{
-			Name: flagSetOptLong,
+			Name:  flagSetOptLong,
 			Usage: "A template option (`KEY=VALUE`) to be applied",
 			Value: &cli.StringSlice{"missingkey=error"},
 		},
@@ -67,17 +67,20 @@ func main() {
 }
 
 func loadInputVarsFile(c *cli.Context) (map[string]interface{}, error) {
-	var vars map[string]interface{}
+	vars := make(map[string]interface{})
 
-	varsFilePath := c.String(flagVarsFile)
-	if varsFilePath != "" {
-		v, err := loadVarsFile(varsFilePath)
-		if err != nil {
-			return nil, err
+	for _, varsFilePath := range c.StringSlice(flagVarsFile) {
+		if varsFilePath != "" {
+			v, err := loadVarsFile(varsFilePath)
+			if err != nil {
+				return nil, err
+			}
+
+			err = mergo.Merge(&vars, v, mergo.WithOverride)
+			if err != nil {
+				return nil, err
+			}
 		}
-		vars = v
-	} else {
-		vars = make(map[string]interface{})
 	}
 
 	return vars, nil

@@ -57,6 +57,17 @@ var _ = Describe("gucci", func() {
 			Expect(string(session.Out.Contents())).To(Equal("text bar text\n"))
 		})
 
+		It("loads several vars files", func() {
+			gucciCmd := exec.Command(gucciPath,
+				"-f", FixturePath("simple_several_vars1.yaml"),
+				"-f", FixturePath("simple_several_vars2.yaml"),
+				FixturePath("simple_several.tpl"))
+
+			session := Run(gucciCmd)
+
+			Expect(string(session.Out.Contents())).To(Equal("text quuz quux corge text\n"))
+		})
+
 		It("uses vars options", func() {
 			gucciCmd := exec.Command(gucciPath,
 				"-s", "FOO=bar",
